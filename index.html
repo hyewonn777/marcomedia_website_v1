@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcomedia</title>
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js for 3D rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls for interactive camera -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --primary-color: #006c89;
+            --secondary-color: #00a5d3;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --text-color: #111827;
+            --border-radius-lg: 1.5rem;
+            --border-radius-xl: 2rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        header .flex-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        .logo-img {
+            width: 3rem;
+            height: 3rem;
+            object-fit: contain;
+        }
+        .logo-text {
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: #006c89;
+        }
+        
+        nav {
+            display: none;
+            gap: 1.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            nav {
+                display: flex;
+                padding-right: 500px;
+            }
+        }
+        
+        .nav-link {
+            color: #4b5563;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .nav-link:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .icon-btn {
+            position: relative;
+            color: #4b5563;
+            transition: color 0.2s, transform 0.2s;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0.5rem;
+        }
+        .icon-btn:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        .icon-btn .count {
+            position: absolute;
+            top: -0.25rem;
+            right: -0.25rem;
+            background-color: var(--dark-color);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 9999px;
+            height: 1rem;
+            width: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #mobile-menu {
+            display: none;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 0.5rem 0;
+        }
+        
+        @media (max-width: 767px) {
+            #mobile-menu {
+                display: block;
+            }
+        }
+        
+        .mobile-nav-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: #4b5563;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        .mobile-nav-link:hover {
+            background-color: #f3f4f6;
+        }
+
+        /* --- Main Content & Page Transitions --- */
+        main {
+            flex-grow: 1;
+            padding: 2rem 0;
+        }
+
+        .page-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .page-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* --- Hero Sections (Home & Bookings) --- */
+        .hero {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 6rem 2rem;
+            border-radius: var(--border-radius-xl);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: heroFadeIn 1s forwards;
+        }
+        @keyframes heroFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://placehold.co/1200x800/222222/555555?text=Professional+Photography+Background') center/cover no-repeat;
+            filter: brightness(0.4) grayscale(1);
+            z-index: 1;
+        }
+        .hero-title, .hero-subtitle, .hero-btn, .hero-highlights {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 5vw, 4.5rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            animation: slideInUp 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        .hero-subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            font-weight: 300;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeIn 1.5s 0.5s forwards;
+        }
+        .hero-btn {
+            background-color: #006c89;
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s, transform 0.2s;
+            opacity: 0;
+            animation: fadeIn 1.5s 1s forwards;
+            border: none;
+            cursor: pointer;
+        }
+        .hero-btn:hover {
+            background-color: #0284a8;
+            transform: translateY(-2px);
+        }
+
+        .hero-highlights {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+            animation: fadeIn 2s 1.5s forwards;
+            opacity: 0;
+            flex-wrap: wrap;
+        }
+        .highlight-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+        .highlight-item i {
+            font-size: 1.5rem;
+            color: #006c89;
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Booking Page Specific Styles */
+        .booking-slideshow-container {
+            position: relative;
+            height: 30rem;
+            border-radius: var(--border-radius-xl);
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            margin-bottom: 2rem;
+        }
+        .booking-slide {
+            display: none;
+            height: 100%;
+            background-position: center;
+            background-size: cover;
+            position: relative;
+            animation: slideFadeIn 1s forwards;
+        }
+        @keyframes slideFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .slide-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 2rem;
+        }
+        .slide-overlay h1 {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .slide-overlay p {
+            font-size: clamp(1rem, 2.5vw, 1.5rem);
+            font-weight: 300;
+        }
+        .slideshow-nav-btn {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: auto;
+            padding: 1rem;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            transition: background-color 0.6s ease;
+            border-radius: 0 0.25rem 0.25rem 0;
+            user-select: none;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .slideshow-nav-btn.prev {
+            left: 0;
+            border-radius: 0 0.25rem 0.25rem 0;
+        }
+        .slideshow-nav-btn.next {
+            right: 0;
+            border-radius: 0.25rem 0 0 0.25rem;
+        }
+        .slideshow-nav-btn:hover {
+            background-color: rgba(0,0,0,0.8);
+        }
+        .slideshow-dots {
+            text-align: center;
+            margin-top: -1.5rem;
+            position: relative;
+            z-index: 15;
+        }
+        .slideshow-dot {
+            cursor: pointer;
+            height: 0.75rem;
+            width: 0.75rem;
+            margin: 0 0.25rem;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            transition: background-color 0.6s ease;
+        }
+        .slideshow-dot.active, .slideshow-dot:hover {
+            background-color: #717171;
+        }
+        
+        .booking-form-container {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 48rem;
+            margin: 2rem auto 0;
+            animation: slideInUp 0.7s forwards;
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #4b5563;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 1rem;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        .form-btn {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s, transform 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .form-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        /* --- Features Section --- */
+        .features {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        @media (min-width: 768px) {
+            .features {
+                grid-template-columns: repeat(3, 1fr);
+                padding-bottom: 30px;
+            }
+        }
+
+        .feature-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+        .feature-icon {
+            font-size: 3rem;
+            color: #006c89;
+            margin-bottom: 1rem;
+        }
+        .feature-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .feature-text {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        /* --- Product & Cart Styling (unchanged, but added to for consistency) --- */
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 1024px) {
+            .product-grid {
+                grid-template-columns: repeat(4, 1fr);
+                padding-bottom: 30px;
+            }
+        }
+
+        .product-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+        .product-img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .product-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        .product-price {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        .product-btn {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            transition: background-color 0.2s, transform 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .product-btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .cart-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 48rem;
+            margin: 0 auto;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.2s;
+        }
+        .cart-item:hover {
+            background-color: #f9fafb;
+        }
+        .cart-item-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 50%;
+        }
+        .cart-item-img {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 0.5rem;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .cart-item-img:hover {
+            transform: scale(1.05);
+        }
+        .cart-item-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .cart-item-title {
+            font-weight: 500;
+        }
+        .cart-item-price {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 50%;
+            justify-content: flex-end;
+        }
+        .cart-qty-btn {
+            color: #4b5563;
+            transition: color 0.2s, transform 0.2s;
+            padding: 0.25rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        .cart-qty-btn:hover {
+            color: #ef4444;
+            transform: scale(1.2);
+        }
+        .cart-qty-display {
+            font-size: 1.125rem;
+            font-weight: 600;
+            width: 1.5rem;
+            text-align: center;
+        }
+        .cart-total-section {
+            border-top: 2px solid #e5e7eb;
+            padding-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+        .cart-total-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        .cart-total-price {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        .checkout-btn {
+            background-color: #1e40af;
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s, transform 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .checkout-btn:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+        }
+        
+        /* --- Modal & 3D Viewer Styling --- */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(17, 24, 39, 0.9);
+            z-index: 99;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            backdrop-filter: blur(5px);
+        }
+        .modal.open {
+            display: flex;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #1f2937;
+            border-radius: var(--border-radius-xl);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            width: 100%;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideInUp 0.5s;
+        }
+        @media (min-width: 1024px) {
+            .modal-content {
+                flex-direction: row;
+                max-width: 90vw;
+            }
+        }
+        .modal-main-area {
+            position: relative;
+            width: 100%;
+            height: 60vh;
+        }
+        @media (min-width: 1024px) {
+            .modal-main-area {
+                width: 75%;
+                height: 100%;
+            }
+        }
+        
+        #design-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+            background-color: #374151;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            transition: background-color 0.2s, transform 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            background-color: #4b5563;
+            transform: rotate(90deg);
+        }
+
+        .modal-sidebar {
+            width: 100%;
+            background-color: #111827;
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-y: auto;
+        }
+        
+        @media (min-width: 1024px) {
+            .modal-sidebar {
+                width: 25%;
+                height: 100%;
+            }
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #34d399;
+        }
+        .modal-subtitle {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #d1d5db;
+            margin-bottom: 0.5rem;
+        }
+        .file-input {
+            width: 100%;
+            font-size: 0.875rem;
+            color: #d1d5db;
+        }
+        .file-input::file-selector-button {
+            margin-right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background-color: #10b981;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .file-input::file-selector-button:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+        }
+        
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+        .preset-img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .preset-img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px #10b981;
+        }
+        
+        .modal-btn-group {
+            margin-top: auto;
+        }
+        .modal-btn {
+            width: 100%;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            transition: background-color 0.2s, transform 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .modal-btn.primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .modal-btn.primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        .modal-btn.secondary {
+            margin-top: 0.5rem;
+            background-color: #374151;
+            color: #d1d5db;
+        }
+        .modal-btn.secondary:hover {
+            background-color: #4b5563;
+            transform: translateY(-2px);
+        }
+        
+        /* --- Footer --- */
+        footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: auto;
+            transition: background-color 0.3s;
+        }
+        footer .container {
+            text-align: center;
+            font-size: 0.875rem;
+        }
+        .footer-links {
+            margin-top: 0.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .footer-link {
+            text-decoration: none;
+            color: white;
+            transition: text-decoration 0.2s, transform 0.2s;
+        }
+        .footer-link:hover {
+            text-decoration: underline;
+            transform: translateY(-2px);
+        }
+        
+        /* --- Utility & Notification Styles --- */
+        #message-box {
+            display: none;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s ease-in-out;
+            margin: 1rem auto; /* Centered */
+            max-width: 600px;
+        }
+        .message-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .message-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        #notification-popup {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100%);
+            transition: transform 0.5s ease-in-out;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0 0 0.5rem 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 50;
+        }
+        #notification-popup.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- JavaScript for app logic -->
+    <script>
+        // Global state for cart and page navigation.
+        // Cart items are stored in memory, so they won't persist on refresh.
+        let cartItems = [];
+        let currentPage = 'home';
+        let currentProduct = null;
+
+        // Variables for the booking slideshow
+        let slideIndex = 1;
+        let slideInterval;
+
+        // THREE.js related variables
+        let scene, camera, renderer, controls, productModel;
+
+        // Mapping product names to 3D model creation functions.
+        // Each function returns a THREE.Group or THREE.Mesh object.
+        const productModels = {
+            'T-Shirt': (material) => {
+                const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 0.2), material);
+                const sleeveLeft = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.2), material);
+                const sleeveRight = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.6, 0.2), material);
+                sleeveLeft.position.set(-1.1, 0.7, 0);
+                sleeveRight.position.set(1.1, 0.7, 0);
+                const group = new THREE.Group();
+                group.add(body, sleeveLeft, sleeveRight);
+                return group;
+            },
+            'Jacket': (material) => productModels['T-Shirt'](material),
+            'Vest': (material) => productModels['T-Shirt'](material),
+            'Jersey': (material) => productModels['T-Shirt'](material),
+            'Polo Shirt': (material) => productModels['T-Shirt'](material),
+            'Sweatshirt': (material) => productModels['T-Shirt'](material),
+            'PE Uniform': (material) => productModels['T-Shirt'](material),
+            'Apron': (material) => productModels['T-Shirt'](material),
+            'Sablay': (material) => productModels['T-Shirt'](material),
+            'Magic Mug': (material) => {
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 32), material);
+                const handle = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.1, 16, 100), material);
+                handle.position.x = 0.6;
+                handle.rotation.y = Math.PI / 2;
+                const group = new THREE.Group();
+                group.add(body, handle);
+                return group;
+            },
+            'Regular Mug': (material) => productModels['Magic Mug'](material),
+            'Banner': (material) => new THREE.Mesh(new THREE.PlaneGeometry(2, 1), material),
+            'Umbrella': (material) => {
+                const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.2, 0.5, 32), material);
+                canopy.rotation.x = Math.PI;
+                canopy.position.y = 0.25;
+                const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2, 8), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+                handle.position.y = -0.75;
+                const group = new THREE.Group();
+                group.add(canopy, handle);
+                return group;
+            },
+            'Mousepad': (material) => new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1), material),
+            'Badge Pin': (material) => new THREE.Mesh(new THREE.CircleGeometry(0.5, 32), material),
+            'Keychain': (material) => new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.5, 0.2), material),
+            'Totebag': (material) => new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 0.3), material),
+            'Lanyard': (material) => new THREE.Mesh(new THREE.BoxGeometry(0.1, 2, 0.1), material),
+            'Medal': (material) => new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.1, 16, 100), material),
+            'Sash': (material) => new THREE.Mesh(new THREE.PlaneGeometry(0.5, 2), material),
+            'Rock Photo': (material) => new THREE.Mesh(new THREE.IcosahedronGeometry(1), material),
+            'Booklet': (material) => new THREE.Mesh(new THREE.BoxGeometry(1, 1.5, 0.3), material),
+        };
+
+        /**
+         * Navigates to a different page and updates the active class.
+         * @param {string} pageId - The ID of the page to navigate to (e.g., 'home', 'products').
+         */
+        window.navigateTo = (pageId) => {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId + '-page').classList.add('active');
+            currentPage = pageId;
+            if (pageId === 'cart') {
+                renderCart();
+            }
+            if (pageId === 'booking') {
+                startSlideshow();
+            } else {
+                stopSlideshow();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        /**
+         * Opens the 3D design modal for a specific product.
+         * @param {string} productName - The name of the product to design.
+         */
+        window.openDesignModal = (productName) => {
+            currentProduct = { name: productName };
+            document.getElementById('design-modal-title').textContent = `Design Your Custom ${productName}`;
+            document.getElementById('design-modal').classList.add('open');
+            init3DScene();
+        };
+
+        /**
+         * Closes the 3D design modal.
+         */
+        window.closeDesignModal = () => {
+            document.getElementById('design-modal').classList.remove('open');
+            if (renderer) {
+                renderer.dispose();
+            }
+        };
+
+        /**
+         * Initializes the THREE.js 3D scene, camera, and renderer.
+         * Sets up the specific product model based on `currentProduct`.
+         */
+        window.init3DScene = () => {
+            const canvas = document.getElementById('design-canvas');
+            if (!canvas) {
+                console.error("Canvas element not found.");
+                return;
+            }
+
+            // Clean up previous scene to avoid memory leaks
+            if (scene) {
+                scene.traverse(object => {
+                    if (object.isMesh) {
+                        object.geometry.dispose();
+                        object.material.dispose();
+                    }
+                });
+                scene = null;
+            }
+            if (renderer) {
+                renderer.dispose();
+            }
+
+            const aspectRatio = canvas.clientWidth / canvas.clientHeight;
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1000);
+            camera.position.z = 2.5;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(0, 1, 1).normalize();
+            scene.add(directionalLight);
+
+            // Product Model
+            const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+            const getModel = productModels[currentProduct.name];
+            if (getModel) {
+                productModel = getModel(material);
+                scene.add(productModel);
+            } else {
+                console.error(`No 3D model defined for product: ${currentProduct.name}`);
+            }
+
+            // Initial model rotation for better view
+            if (productModel) {
+                productModel.rotation.y = Math.PI / 4;
+            }
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            // Animation Loop
+            const animate = () => {
+                requestAnimationFrame(animate);
+                if (controls) controls.update();
+                if (renderer) renderer.render(scene, camera);
+            };
+            animate();
+
+            window.addEventListener('resize', onWindowResize, false);
+        };
+
+        /**
+         * Handles window resizing to keep the 3D canvas responsive.
+         */
+        window.onWindowResize = () => {
+            const canvas = document.getElementById('design-canvas');
+            if (!canvas) return;
+            const aspectRatio = canvas.clientWidth / canvas.clientHeight;
+            camera.aspect = aspectRatio;
+            camera.updateProjectionMatrix();
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        };
+
+        /**
+         * Handles file upload for design textures and applies it to the 3D model.
+         * @param {Event} event - The file input change event.
+         */
+        window.handleDesignUpload = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const textureLoader = new THREE.TextureLoader();
+                textureLoader.load(e.target.result, (texture) => {
+                    const material = new THREE.MeshStandardMaterial({ map: texture });
+                    if (productModel && productModel.children.length > 0) {
+                        productModel.children.forEach(child => child.material = material);
+                    } else if (productModel) {
+                        productModel.material = material;
+                    }
+                });
+            };
+            reader.readAsDataURL(file);
+        };
+
+        /**
+         * Applies a pre-set texture to the 3D model.
+         * @param {string} imageUrl - The URL of the pre-set image.
+         */
+        window.applyPreset = (imageUrl) => {
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(imageUrl, (texture) => {
+                const material = new THREE.MeshStandardMaterial({ map: texture });
+                if (productModel && productModel.children.length > 0) {
+                    productModel.children.forEach(child => child.material = material);
+                } else if (productModel) {
+                    productModel.material = material;
+                }
+            });
+        };
+
+        /**
+         * Adds the current 3D designed product to the shopping cart.
+         */
+        window.addToCartWithDesign = () => {
+            if (!productModel) {
+                showMessage("No product model to add to cart.", 'error');
+                return;
+            }
+
+            // Capture a screenshot of the canvas
+            renderer.render(scene, camera);
+            const dataUrl = renderer.domElement.toDataURL('image/png');
+
+            const product = getProductDetails(currentProduct.name);
+            const existingItem = cartItems.find(item => item.name === product.name && item.design === dataUrl);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cartItems.push({
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    image: dataUrl,
+                    design: dataUrl
+                });
+            }
+            showNotification(`${product.name} added to cart!`);
+            closeDesignModal();
+            updateCartCount();
+        };
+
+        // Static product data
+        function getProductDetails(name) {
+            const products = {
+                'T-Shirt': { price: 500.00 },
+                'Jacket': { price: 850.00 },
+                'Vest': { price: 600.00 },
+                'Jersey': { price: 750.00 },
+                'Polo Shirt': { price: 650.00 },
+                'Sweatshirt': { price: 900.00 },
+                'PE Uniform': { price: 700.00 },
+                'Apron': { price: 350.00 },
+                'Sablay': { price: 400.00 },
+                'Magic Mug': { price: 250.00 },
+                'Regular Mug': { price: 150.00 },
+                'Banner': { price: 800.00 },
+                'Umbrella': { price: 450.00 },
+                'Mousepad': { price: 100.00 },
+                'Badge Pin': { price: 20.00 },
+                'Keychain': { price: 50.00 },
+                'Totebag': { price: 300.00 },
+                'Lanyard': { price: 90.00 },
+                'Medal': { price: 180.00 },
+                'Sash': { price: 200.00 },
+                'Rock Photo': { price: 550.00 },
+                'Booklet': { price: 1200.00 }
+            };
+            return products[name] || { price: 0 };
+        }
+
+        /**
+         * Renders the cart items on the cart page.
+         */
+        window.renderCart = () => {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotalElement = document.getElementById('cart-total');
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+
+            if (cartItems.length === 0) {
+                cartItemsContainer.innerHTML = '<p style="color: #6b7280; text-align: center;">Your cart is empty.</p>';
+            } else {
+                cartItems.forEach(item => {
+                    total += item.price * item.quantity;
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'cart-item';
+                    itemElement.innerHTML = `
+                            <div class="cart-item-info">
+                                <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                                <div class="cart-item-details">
+                                    <h4 class="cart-item-title">${item.name}</h4>
+                                    <p class="cart-item-price">₱${item.price.toFixed(2)}</p>
+                                </div>
+                            </div>
+                            <div class="cart-item-controls">
+                                <div style="display: flex; align-items: center; gap: 0.25rem;">
+                                    <button onclick="decreaseQuantity('${item.name}')" class="cart-qty-btn"><i class="fas fa-minus"></i></button>
+                                    <span class="cart-qty-display">${item.quantity}</span>
+                                    <button onclick="increaseQuantity('${item.name}')" class="cart-qty-btn"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <span style="font-weight: 600; color: #111827; width: 6rem; text-align: right;">₱${(item.price * item.quantity).toFixed(2)}</span>
+                                <button onclick="removeItem('${item.name}')" class="cart-qty-btn"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        `;
+                    cartItemsContainer.appendChild(itemElement);
+                });
+            }
+            cartTotalElement.textContent = `₱${total.toFixed(2)}`;
+            updateCartCount();
+        };
+
+        /**
+         * Updates the quantity of an item in the cart.
+         * @param {string} name - The name of the product.
+         * @param {number} delta - The change in quantity (1 or -1).
+         */
+        function updateQuantity(name, delta) {
+            const item = cartItems.find(i => i.name === name);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    removeItem(name);
+                }
+            }
+            renderCart();
+        }
+
+        window.increaseQuantity = (name) => updateQuantity(name, 1);
+        window.decreaseQuantity = (name) => updateQuantity(name, -1);
+
+        /**
+         * Removes an item from the cart.
+         * @param {string} name - The name of the item to remove.
+         */
+        window.removeItem = (name) => {
+            cartItems = cartItems.filter(i => i.name !== name);
+            renderCart();
+        };
+
+        /**
+         * Updates the cart item count displayed in the header.
+         */
+        window.updateCartCount = () => {
+            const count = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+            document.getElementById('cart-item-count').textContent = count;
+        };
+
+        /**
+         * Simulates the checkout process.
+         */
+        window.checkout = () => {
+            if (cartItems.length === 0) {
+                showMessage("Your cart is empty. Please add items before checking out.", 'error');
+                return;
+            }
+
+            cartItems = [];
+            renderCart();
+            showMessage("Order placed successfully! Thank you for your purchase.", 'success');
+            setTimeout(() => navigateTo('home'), 3000);
+        };
+
+        /**
+         * Simulates a booking form submission.
+         */
+        window.submitBooking = () => {
+            const form = document.getElementById('booking-form');
+            showMessage("Booking submitted successfully! We will contact you shortly.", 'success');
+            form.reset();
+        };
+
+        /**
+         * Displays a temporary message box on the page.
+         * @param {string} message - The message to display.
+         * @param {string} type - The message type ('success' or 'error').
+         */
+        window.showMessage = (message, type) => {
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = message;
+            messageBox.className = 'message-' + type;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000);
+        };
+
+        /**
+         * Displays a temporary notification pop-up.
+         * @param {string} message - The message to display.
+         */
+        window.showNotification = (message) => {
+            const notification = document.getElementById('notification-popup');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        };
+
+        // Simulates a user account status (not persistent)
+        window.accountStatus = { loggedIn: false };
+        window.toggleAccountMenu = () => {
+            const menu = document.getElementById('account-menu');
+            menu.classList.toggle('hidden');
+        };
+        window.login = () => {
+            accountStatus.loggedIn = true;
+            document.getElementById('user-profile-icon').style.color = 'var(--primary-color)';
+            showMessage('You are now logged in!', 'success');
+            document.getElementById('account-menu').classList.add('hidden');
+        };
+        window.logout = () => {
+            accountStatus.loggedIn = false;
+            document.getElementById('user-profile-icon').style.color = '#4b5563';
+            showMessage('You have been logged out.', 'success');
+            document.getElementById('account-menu').classList.add('hidden');
+        };
+
+        // Slideshow functionality for the booking page
+        window.plusSlides = (n) => {
+            showSlides(slideIndex += n);
+            resetSlideshowTimer();
+        };
+
+        window.currentSlide = (n) => {
+            showSlides(slideIndex = n);
+            resetSlideshowTimer();
+        };
+
+        window.showSlides = (n) => {
+            let i;
+            let slides = document.getElementsByClassName("booking-slide");
+            let dots = document.getElementsByClassName("slideshow-dot");
+            if (n > slides.length) { slideIndex = 1 }
+            if (n < 1) { slideIndex = slides.length }
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            if (slides[slideIndex - 1]) {
+                slides[slideIndex - 1].style.display = "block";
+            }
+            if (dots[slideIndex - 1]) {
+                dots[slideIndex - 1].className += " active";
+            }
+        };
+
+        window.autoSlides = () => {
+            plusSlides(1);
+        };
+
+        window.startSlideshow = () => {
+            showSlides(slideIndex);
+            stopSlideshow(); // Clear any existing timer first
+            slideInterval = setInterval(autoSlides, 5000); // Change image every 5 seconds
+        };
+
+        window.stopSlideshow = () => {
+            clearInterval(slideInterval);
+        };
+
+        window.resetSlideshowTimer = () => {
+            stopSlideshow();
+            startSlideshow();
+        };
+
+    </script>
+
+    <!-- Main Content -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Notification Pop-up -->
+        <div id="notification-popup">
+            Item added to cart!
+        </div>
+
+        <!-- Header -->
+        <header>
+            <div class="container flex-container">
+                <div class="flex-container" style="gap: 0.5rem;">
+                    <a href="#" class="logo" onclick="navigateTo('home')">
+                        <img src="images/rsz_logo.png" alt="Logo" class="logo-img">
+                        <span class="logo-text">Marcomedia</span>
+                    </a>
+                </div>
+                <nav>
+                    <a href="#" class="nav-link" onclick="navigateTo('home')">Home</a>
+                    <a href="#" class="nav-link" onclick="navigateTo('products')">Products</a>
+                    <a href="#" class="nav-link" onclick="navigateTo('booking')">Bookings</a>
+                </nav>
+                <div class="flex-container" style="gap: 1rem;">
+                    <button class="icon-btn" onclick="navigateTo('cart')">
+                        <i class="fas fa-shopping-cart" style="font-size: 1.125rem;"></i>
+                        <span id="cart-item-count" class="count">0</span>
+                    </button>
+                    <div style="position: relative;">
+                        <button class="icon-btn" onclick="toggleAccountMenu()">
+                            <i id="user-profile-icon" class="fas fa-user-circle" style="font-size: 1.125rem;"></i>
+                        </button>
+                        <div id="account-menu" class="hidden" style="position: absolute; top: 100%; right: 0; background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 0.5rem; margin-top: 0.5rem; min-width: 10rem;">
+                            <button onclick="login()" style="width: 100%; text-align: left; padding: 0.5rem 1rem; border-radius: 0.25rem; transition: background-color 0.2s; border: none; background: none; cursor: pointer;">Log In</button>
+                            <button onclick="logout()" style="width: 100%; text-align: left; padding: 0.5rem 1rem; border-radius: 0.25rem; transition: background-color 0.2s; border: none; background: none; cursor: pointer;">Log Out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:block">
+                <nav style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0 1rem;">
+                    <a href="#" class="mobile-nav-link" onclick="navigateTo('home')">Home</a>
+                    <a href="#" class="mobile-nav-link" onclick="navigateTo('products')">Products</a>
+                    <a href="#" class="mobile-nav-link" onclick="navigateTo('booking')">Bookings</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="container">
+            <div id="message-box"></div>
+
+            <!-- Home Page -->
+            <section id="home-page" class="page-content active">
+                <div class="hero">
+                    <h1 class="hero-title">Your Vision. Our Expertise.</h1>
+                    <p class="hero-subtitle">From custom apparel to professional documents and stunning photography, we capture and create your every need with unparalleled quality and speed.</p>
+                    <button class="hero-btn" onclick="navigateTo('products')">
+                        Explore Products
+                    </button>
+                    <div class="hero-highlights">
+                        <div class="highlight-item">
+                            <i class="fas fa-magic"></i>
+                            <span>Custom Designs</span>
+                        </div>
+                        <div class="highlight-item">
+                            <i class="fas fa-bolt"></i>
+                            <span>Fast Turnaround</span>
+                        </div>
+                        <div class="highlight-item">
+                            <i class="fas fa-star"></i>
+                            <span>Premium Quality</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Section -->
+                <div class="features">
+                    <div class="feature-card">
+                        <i class="fas fa-tshirt feature-icon"></i>
+                        <h3 class="feature-title">Custom Apparel</h3>
+                        <p class="feature-text">Design your own T-shirts, jackets, and more for your team or event.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-file-alt feature-icon"></i>
+                        <h3 class="feature-title">Document Printing</h3>
+                        <p class="feature-text">High-quality booklets, brochures, and banners for your business needs.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-camera-retro feature-icon"></i>
+                        <h3 class="feature-title">Photography Services</h3>
+                        <p class="feature-text">Book a professional photographer to capture your special moments.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Products Page -->
+            <section id="products-page" class="page-content">
+                <h2 style="font-size: 2.25rem; font-weight: bold; margin-bottom: 2rem; text-align: center;">Our Products</h2>
+                <div class="product-grid">
+                    <div class="product-card">
+                        <img src="images\T-Shirt.jpg" alt="Custom T-Shirt" class="product-img">
+                        <h3 class="product-title">T-Shirt</h3>
+                        <p class="product-price">₱500.00</p>
+                        <button class="product-btn" onclick="openDesignModal('T-Shirt')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\Jacket.jpg" alt="Custom Jacket" class="product-img">
+                        <h3 class="product-title">Jacket</h3>
+                        <p class="product-price">₱850.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Jacket')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\Vest.jpg" alt="Custom Vest" class="product-img">
+                        <h3 class="product-title">Vest</h3>
+                        <p class="product-price">₱600.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Vest')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\Jersey.jpg" alt="Custom Jersey" class="product-img">
+                        <h3 class="product-title">Jersey</h3>
+                        <p class="product-price">₱750.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Jersey')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\Polo+Shirt.jpg" alt="Polo Shirt" class="product-img">
+                        <h3 class="product-title">Polo Shirt</h3>
+                        <p class="product-price">₱650.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Polo Shirt')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\Sweater.jpg" alt="Sweatshirt" class="product-img">
+                        <h3 class="product-title">Sweatshirt</h3>
+                        <p class="product-price">₱900.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Sweatshirt')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\PE_Uniform.jpg" alt="PE Uniform" class="product-img">
+                        <h3 class="product-title">PE Uniform</h3>
+                        <p class="product-price">₱700.00</p>
+                        <button class="product-btn" onclick="openDesignModal('PE Uniform')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\appron.jpg" alt="Apron" class="product-img">
+                        <h3 class="product-title">Apron</h3>
+                        <p class="product-price">₱350.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Apron')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\Sablay.jpg" alt="Sablay" class="product-img">
+                        <h3 class="product-title">Sablay</h3>
+                        <p class="product-price">₱400.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Sablay')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="images\magic_mug.jpg" alt="Magic Mug" class="product-img">
+                        <h3 class="product-title">Magic Mug</h3>
+                        <p class="product-price">₱250.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Magic Mug')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Regular+Mug" alt="Regular Mug" class="product-img">
+                        <h3 class="product-title">Regular Mug</h3>
+                        <p class="product-price">₱150.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Regular Mug')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Banner" alt="Custom Banner" class="product-img">
+                        <h3 class="product-title">Banner</h3>
+                        <p class="product-price">₱800.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Banner')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Umbrella" alt="Umbrella" class="product-img">
+                        <h3 class="product-title">Umbrella</h3>
+                        <p class="product-price">₱450.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Umbrella')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Mousepad" alt="Mousepad" class="product-img">
+                        <h3 class="product-title">Mousepad</h3>
+                        <p class="product-price">₱100.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Mousepad')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Badge+Pin" alt="Badge Pin" class="product-img">
+                        <h3 class="product-title">Badge Pin</h3>
+                        <p class="product-price">₱20.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Badge Pin')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Keychain" alt="Keychain" class="product-img">
+                        <h3 class="product-title">Keychain</h3>
+                        <p class="product-price">₱50.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Keychain')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Totebag" alt="Totebag" class="product-img">
+                        <h3 class="product-title">Totebag</h3>
+                        <p class="product-price">₱300.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Totebag')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Lanyard" alt="Lanyard" class="product-img">
+                        <h3 class="product-title">Lanyard</h3>
+                        <p class="product-price">₱90.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Lanyard')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Medal" alt="Medal" class="product-img">
+                        <h3 class="product-title">Medal</h3>
+                        <p class="product-price">₱180.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Medal')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Sash" alt="Sash" class="product-img">
+                        <h3 class="product-title">Sash</h3>
+                        <p class="product-price">₱200.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Sash')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Rock+Photo" alt="Rock Photo" class="product-img">
+                        <h3 class="product-title">Rock Photo</h3>
+                        <p class="product-price">₱550.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Rock Photo')">Design in 3D</button>
+                    </div>
+                    <div class="product-card">
+                        <img src="https://placehold.co/300x300/e2e8f0/64748b?text=Booklet" alt="Booklet" class="product-img">
+                        <h3 class="product-title">Booklet</h3>
+                        <p class="product-price">₱1200.00</p>
+                        <button class="product-btn" onclick="openDesignModal('Booklet')">Design in 3D</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Booking Page -->
+            <section id="booking-page" class="page-content">
+                <!-- Slideshow Container -->
+                <div class="booking-slideshow-container">
+                    <div class="booking-slide" style="background-image: url('https://placehold.co/1200x800/d1e5f0/4a719d?text=Event+Photography');">
+                        <div class="slide-overlay">
+                            <h1>Book a Professional Photographer</h1>
+                            <p>Capture your special moments with our expert team.</p>
+                        </div>
+                    </div>
+                    <div class="booking-slide" style="background-image: url('https://placehold.co/1200x800/f0d1e5/9d4a71?text=Wedding+Photography');">
+                        <div class="slide-overlay">
+                            <h1>Wedding Photography</h1>
+                            <p>Stunning, memorable photos for your special day.</p>
+                        </div>
+                    </div>
+                    <div class="booking-slide" style="background-image: url('https://placehold.co/1200x800/e5f0d1/719d4a?text=Corporate+Photography');">
+                        <div class="slide-overlay">
+                            <h1>Corporate & Portrait Shoots</h1>
+                            <p>Professional photos to elevate your brand and career.</p>
+                        </div>
+                    </div>
+
+                    <!-- Next/previous buttons -->
+                    <a class="slideshow-nav-btn prev" onclick="plusSlides(-1)">&#10094;</a>
+                    <a class="slideshow-nav-btn next" onclick="plusSlides(1)">&#10095;</a>
+                </div>
+
+                <!-- The dots/circles -->
+                <div class="slideshow-dots" style="text-align:center">
+                    <span class="slideshow-dot" onclick="currentSlide(1)"></span>
+                    <span class="slideshow-dot" onclick="currentSlide(2)"></span>
+                    <span class="slideshow-dot" onclick="currentSlide(3)"></span>
+                </div>
+
+                <div class="booking-form-container">
+                    <p style="color: #6b7280; text-align: center; margin-bottom: 2rem;">Please fill out the form below and we will get back to you within 24 hours to confirm your booking.</p>
+                    <form id="booking-form" onsubmit="event.preventDefault(); submitBooking();">
+                        <div class="form-grid">
+                            <div>
+                                <label for="customer-name" class="form-label">Customer Name</label>
+                                <input type="text" id="customer-name" name="customer-name" required class="form-input">
+                            </div>
+                            <div>
+                                <label for="location" class="form-label">Event Location</label>
+                                <input type="text" id="location" name="location" required class="form-input">
+                            </div>
+                            <div>
+                                <label for="start-date" class="form-label">Start Date</label>
+                                <input type="date" id="start-date" name="start-date" required class="form-input">
+                            </div>
+                            <div>
+                                <label for="end-date" class="form-label">End Date</label>
+                                <input type="date" id="end-date" name="end-date" required class="form-input">
+                            </div>
+                        </div>
+                        <div style="margin-top: 1.5rem;">
+                            <label for="photographer" class="form-label">Select Photographer</label>
+                            <select id="photographer" name="photographer" class="form-select">
+                                <option value="any">Any Available Photographer</option>
+                                <option value="John Smith">John Smith</option>
+                                <option value="Jane Doe">Jane Doe</option>
+                            </select>
+                        </div>
+                        <div style="margin-top: 1.5rem; text-align: center;">
+                            <button type="submit" class="form-btn">
+                                Submit Booking Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Cart Page -->
+            <section id="cart-page" class="page-content">
+                <h2 style="font-size: 2.25rem; font-weight: bold; margin-bottom: 2rem; text-align: center;">Your Shopping Cart</h2>
+                <div class="cart-container">
+                    <div id="cart-items" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                        <!-- Cart items will be dynamically inserted here -->
+                    </div>
+                    <div class="cart-total-section">
+                        <h3 class="cart-total-title">Total:</h3>
+                        <span id="cart-total" class="cart-total-price">₱0.00</span>
+                    </div>
+                    <div style="margin-top: 1.5rem; text-align: center;">
+                        <button class="checkout-btn" onclick="checkout()">
+                            Proceed to Checkout
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <p>&copy; 2024 Marcomedia. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#" class="footer-link">Privacy Policy</a>
+                    <a href="#" class="footer-link">Terms of Service</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 3D Design Modal -->
+    <div id="design-modal" class="modal">
+        <div class="modal-content">
+            <!-- 3D View Area -->
+            <div class="modal-main-area">
+                <canvas id="design-canvas"></canvas>
+                <button onclick="closeDesignModal()" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Controls & Menu -->
+            <div class="modal-sidebar">
+                <div>
+                    <h2 id="design-modal-title" class="modal-title">Design Your Product</h2>
+                    <p class="modal-subtitle">Explore the interactive 3D model. Spin, zoom, and adjust to get the perfect view.</p>
+
+                    <div class="form-group">
+                        <label class="label">Upload Your Design</label>
+                        <input type="file" onchange="handleDesignUpload(event)" accept="image/*" class="file-input">
+                    </div>
+
+                    <div class="form-group">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: #e5e7eb; margin-bottom: 0.5rem;">Pre-set Designs</h3>
+                        <div class="preset-grid">
+                            <img src="https://placehold.co/100x100/A020F0/FFFFFF?text=Logo" onclick="applyPreset('https://placehold.co/100x100/A020F0/FFFFFF?text=Logo')" class="preset-img" />
+                            <img src="https://placehold.co/100x100/4B0082/FFFFFF?text=Pattern" onclick="applyPreset('https://placehold.co/100x100/4B0082/FFFFFF?text=Pattern')" class="preset-img" />
+                            <img src="https://placehold.co/100x100/FFD700/000000?text=Text" onclick="applyPreset('https://placehold.co/100x100/FFD700/000000?text=Text')" class="preset-img" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-btn-group">
+                    <button class="modal-btn primary" onclick="addToCartWithDesign()">
+                        Add to Cart with Design
+                    </button>
+                    <button class="modal-btn secondary" onclick="showMessage('This feature is not yet available.', 'error')">
+                        Review Progress
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial page load
+        document.addEventListener('DOMContentLoaded', () => {
+            navigateTo('home');
+        });
+    </script>
+
+    <script>
+        async function loadProducts() {
+            const response = await fetch("http://localhost/pos/stock.php?api=1");
+            const products = await response.json();
+            const container = document.getElementById("product-list");
+            container.innerHTML = "";
+
+            products.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "product-card";
+                card.innerHTML = `
+          <img src="../pos/${p.image_path || 'uploads/no-image.png'}" alt="${p.name}" style="max-width:100px;">
+          <h3>${p.name}</h3>
+          <p>Category: ${p.category}</p>
+          <p>Price: ₱${parseFloat(p.price).toFixed(2)}</p>
+          <p>Available: ${p.qty}</p>
+          <form method="POST" action="../pos/buy_product.php">
+            <input type="hidden" name="product_id" value="${p.id}">
+            <input type="number" name="quantity" min="1" max="${p.qty}" value="1" required>
+            <button type="submit">🛒 Buy</button>
+          </form>
+        `;
+                container.appendChild(card);
+            });
+        }
+        loadProducts();
+    </script>
+
+</body>
+</html>
