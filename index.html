@@ -197,7 +197,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('https://placehold.co/1200x800/222222/555555?text=Professional+Photography+Background') center/cover no-repeat;
+            background: url("images/IMG_7399.jpg") center/cover no-repeat;
             filter: brightness(0.4) grayscale(1);
             z-index: 1;
         }
@@ -1602,26 +1602,29 @@
 
             <!-- Booking Page -->
             <section id="booking-page" class="page-content">
-                <!-- Slideshow Container -->
                 <div class="booking-slideshow-container">
-                    <div class="booking-slide" style="background-image: url('https://placehold.co/1200x800/d1e5f0/4a719d?text=Event+Photography');">
+                    <div class="booking-slide" style="background-image: url('images/IMG_7452.jpg');">
                         <div class="slide-overlay">
                             <h1>Book a Professional Photographer</h1>
                             <p>Capture your special moments with our expert team.</p>
                         </div>
                     </div>
-                    <div class="booking-slide" style="background-image: url('https://placehold.co/1200x800/f0d1e5/9d4a71?text=Wedding+Photography');">
+
+                    <div class="booking-slide" style="background-image: url('images/IMG_9999.jpg');">
                         <div class="slide-overlay">
                             <h1>Wedding Photography</h1>
                             <p>Stunning, memorable photos for your special day.</p>
                         </div>
                     </div>
-                    <div class="booking-slide" style="background-image: url('https://placehold.co/1200x800/e5f0d1/719d4a?text=Corporate+Photography');">
+
+                    <div class="booking-slide" style="background-image: url('images/IMG_7684.jpg');">
                         <div class="slide-overlay">
                             <h1>Corporate & Portrait Shoots</h1>
                             <p>Professional photos to elevate your brand and career.</p>
                         </div>
                     </div>
+                </div>
+            </section>
 
                     <!-- Next/previous buttons -->
                     <a class="slideshow-nav-btn prev" onclick="plusSlides(-1)">&#10094;</a>
@@ -1759,31 +1762,52 @@
 
     <script>
         async function loadProducts() {
-            const response = await fetch("http://localhost/pos/stock.php?api=1");
-            const products = await response.json();
-            const container = document.getElementById("product-list");
-            container.innerHTML = "";
-
-            products.forEach(p => {
-                const card = document.createElement("div");
-                card.className = "product-card";
-                card.innerHTML = `
-          <img src="../pos/${p.image_path || 'uploads/no-image.png'}" alt="${p.name}" style="max-width:100px;">
-          <h3>${p.name}</h3>
-          <p>Category: ${p.category}</p>
-          <p>Price: ₱${parseFloat(p.price).toFixed(2)}</p>
-          <p>Available: ${p.qty}</p>
-          <form method="POST" action="../pos/buy_product.php">
-            <input type="hidden" name="product_id" value="${p.id}">
-            <input type="number" name="quantity" min="1" max="${p.qty}" value="1" required>
-            <button type="submit">🛒 Buy</button>
-          </form>
-        `;
-                container.appendChild(card);
-            });
+            try {
+                const res = await fetch("/pos/stock.php?api=1");
+                if (!res.ok) throw new Error("Failed to fetch products");
+                const products = await res.json();
+                const c = document.getElementById('product-list');
+                c.innerHTML = '';
+                products.forEach(p => {
+                    const card = document.createElement('div'); card.className = 'product-card';
+                    card.innerHTML = `
+        <img class="product-img" src="${p.image_path ? ('/pos/' + p.image_path) : 'https://placehold.co/300'}" alt="${escapeHtml(p.name)}">
+        <h3>${escapeHtml(p.name)}</h3>
+        <p>Price: ₱${parseFloat(p.price).toFixed(2)}</p>
+        <p>Stock: ${p.qty}</p>
+        <div>
+          <input type="number" min="1" max="${p.qty}" value="1" id="qty-${p.id}" style="width:60px">
+          <button class="btn" onclick="buy(${p.id})">Buy</button>
+        </div>`;
+                    c.appendChild(card);
+                });
+            } catch (err) {
+                document.getElementById('product-list').textContent = 'Error loading products: ' + err.message;
+            }
         }
-        loadProducts();
-    </script>
 
+        function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+
+        async function buy(productId) {
+            const qty = parseInt(document.getElementById('qty-' + productId).value) || 1;
+            if (qty <= 0) { alert('Quantity must be at least 1'); return; }
+            try {
+                const res = await fetch("/pos/buy_product.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ product_id: productId, quantity: qty })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Purchase failed');
+                document.getElementById('msg').textContent = data.message || 'Purchase OK';
+                // refresh products to show updated stock
+                await loadProducts();
+            } catch (err) {
+                document.getElementById('msg').textContent = 'Error: ' + err.message; document.getElementById('msg').style.color = 'red';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProducts);
+    </script>
 </body>
 </html>
